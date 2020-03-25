@@ -935,9 +935,14 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
+
+	Size2i size = p_size;
+	size.x = MAX(1, size.x);
+	size.y = MAX(1, size.y);
+
 	WindowData &wd = windows[p_window];
 
-	if (wd.size.width == p_size.width && wd.size.height == p_size.height)
+	if (wd.size.width == size.width && wd.size.height == size.height)
 		return;
 
 	XWindowAttributes xwa;
@@ -951,10 +956,10 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	xsh = XAllocSizeHints();
 	if (!window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		xsh->flags = PMinSize | PMaxSize;
-		xsh->min_width = p_size.x;
-		xsh->max_width = p_size.x;
-		xsh->min_height = p_size.y;
-		xsh->max_height = p_size.y;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	} else {
 		xsh->flags = 0L;
 		if (wd.min_size != Size2i()) {
@@ -972,10 +977,10 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	XFree(xsh);
 
 	// Resize the window
-	XResizeWindow(x11_display, wd.x11_window, p_size.x, p_size.y);
+	XResizeWindow(x11_display, wd.x11_window, size.x, size.y);
 
 	// Update our videomode width and height
-	wd.size = p_size;
+	wd.size = size;
 
 	for (int timeout = 0; timeout < 50; ++timeout) {
 		XSync(x11_display, False);
@@ -3048,7 +3053,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	WindowID id;
 	{
 		WindowData wd;
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width, p_rect.size.height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
 		XMapWindow(x11_display, wd.x11_window);
 
