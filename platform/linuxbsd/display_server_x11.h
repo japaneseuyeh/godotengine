@@ -88,6 +88,7 @@ class DisplayServerX11 : public DisplayServer {
 
 		Size2i min_size;
 		Size2i max_size;
+		Point2i position;
 		Size2i size;
 		Point2i im_position;
 		bool im_active = false;
@@ -99,6 +100,8 @@ class DisplayServerX11 : public DisplayServer {
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		Set<WindowID> transient_children;
+
+		ObjectID instance_id;
 
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
@@ -237,6 +240,11 @@ public:
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void delete_sub_window(WindowID p_id);
+
+	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
